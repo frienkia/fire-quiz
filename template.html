@@ -1,0 +1,798 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>消防设施操作员（中级·监控）模拟考试</title>
+<link rel="manifest" href="manifest.webmanifest">
+<meta name="theme-color" content="#2563eb">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-title" content="消防刷题">
+<style>
+*{box-sizing:border-box}
+html,body{overflow-x:hidden}
+body{margin:0;background:#f3f5f9;color:#1f2937;font:15px/1.75 -apple-system,BlinkMacSystemFont,"Segoe UI","Microsoft YaHei",sans-serif}
+.wrap{max-width:860px;margin:0 auto;padding:26px 16px 72px}
+.card{background:#fff;border:1px solid #e6eaf2;border-radius:16px;padding:24px 26px;box-shadow:0 4px 16px rgba(31,41,55,.05)}
+h1{font-size:21px;margin:0 0 6px;font-weight:650}
+h2{font-size:16px;margin:0 0 10px;font-weight:650}
+.sub{color:#6b7280;font-size:13.5px;margin:0}
+.rule{height:1px;background:#eef1f6;margin:18px 0}
+.row{display:flex;flex-wrap:wrap;gap:10px;align-items:center}
+.seg{display:inline-flex;border:1px solid #dfe4ee;border-radius:10px;overflow:hidden}
+.seg button{border:0;background:#fff;padding:8px 18px;font-size:14px;cursor:pointer;color:#374151}
+.seg button+button{border-left:1px solid #dfe4ee}
+.seg button.on{background:#2563eb;color:#fff}
+.chip{font-size:12px;color:#2563eb;background:#eef4ff;border-radius:999px;padding:2px 10px;display:inline-block}
+.chip.type{color:#475569;background:#f1f4f9}
+.opt{display:flex;gap:12px;align-items:flex-start;border:1px solid #e2e7f0;border-radius:12px;padding:12px 14px;margin:10px 0;cursor:pointer;transition:.12s;user-select:none}
+.opt:hover{border-color:#b9cdf8;background:#f8fbff}
+.opt.on{border-color:#2563eb;background:#f2f7ff}
+.opt.ok{border-color:#16a34a;background:#f2fbf5}
+.opt.bad{border-color:#dc2626;background:#fdf4f4}
+.opt.lock{cursor:default}
+.opt .tag{flex:0 0 24px;height:24px;border-radius:50%;border:1px solid #cbd5e1;display:flex;align-items:center;justify-content:center;font-size:13px;color:#475569;margin-top:2px}
+.opt.sq .tag{border-radius:6px}
+.opt.on .tag{background:#2563eb;border-color:#2563eb;color:#fff}
+.opt.ok .tag{background:#16a34a;border-color:#16a34a;color:#fff}
+.opt.bad .tag{background:#dc2626;border-color:#dc2626;color:#fff}
+.btn{border:1px solid #dfe4ee;background:#fff;border-radius:10px;padding:9px 18px;font-size:14px;cursor:pointer;color:#374151}
+.btn:hover{border-color:#b9cdf8}
+.btn.primary{background:#2563eb;border-color:#2563eb;color:#fff}
+.btn.primary:hover{background:#1d4ed8}
+.btn.danger{background:#fff;border-color:#f3c6c6;color:#dc2626}
+.btn:disabled{opacity:.4;cursor:not-allowed}
+.bar{position:sticky;top:0;z-index:9;background:rgba(255,255,255,.94);backdrop-filter:blur(8px);border-bottom:1px solid #eef1f6}
+.bar .inner{max-width:860px;margin:0 auto;padding:11px 16px;display:flex;gap:16px;align-items:center;flex-wrap:wrap}
+.bar .meta{font-size:13.5px;color:#6b7280}
+.bar .meta b{color:#1f2937}
+.spacer{flex:1}
+.stem{font-size:17px;font-weight:600;line-height:1.85;margin:14px 0 6px}
+.tip{font-size:12.5px;color:#6b7280;margin-bottom:4px}
+@keyframes q-out-left{from{opacity:1;transform:none}to{opacity:0;transform:translateX(-26%)}}
+@keyframes q-out-right{from{opacity:1;transform:none}to{opacity:0;transform:translateX(26%)}}
+@keyframes q-in-left{from{opacity:0;transform:translateX(-26%)}to{opacity:1;transform:none}}
+@keyframes q-in-right{from{opacity:0;transform:translateX(26%)}to{opacity:1;transform:none}}
+.card.qwrap{will-change:transform,opacity}
+.qwrap.anim-out-left{animation:q-out-left .07s linear both}
+.qwrap.anim-out-right{animation:q-out-right .07s linear both}
+.qwrap.anim-in-left{animation:q-in-left .12s cubic-bezier(.22,.61,.36,1) both}
+.qwrap.anim-in-right{animation:q-in-right .12s cubic-bezier(.22,.61,.36,1) both}
+@media(prefers-reduced-motion:reduce){.qwrap{animation:none!important}}
+.swipe-hint{display:none;text-align:center;font-size:12px;color:#9ca3af;margin-top:6px;letter-spacing:2px}
+@media(max-width:640px){.swipe-hint{display:block}}
+.sheet{display:grid;grid-template-columns:repeat(auto-fill,minmax(46px,1fr));gap:8px;margin-top:12px}
+.sheet button{height:40px;border:1px solid #e2e7f0;background:#fff;border-radius:8px;cursor:pointer;font-size:13px;color:#374151}
+.sheet button.done{background:#eef4ff;border-color:#c7dbff;color:#2563eb}
+.sheet button.cur{outline:2px solid #2563eb;outline-offset:1px}
+.score{font-size:54px;font-weight:700;line-height:1.05;letter-spacing:-1.5px}
+.score small{font-size:18px;font-weight:500;color:#6b7280;letter-spacing:0}
+.badge{display:inline-block;border-radius:999px;padding:3px 12px;font-size:13px;margin-left:10px;vertical-align:8px}
+.badge.ok{background:#e8f7ee;color:#16a34a}
+.badge.no{background:#fdecec;color:#dc2626}
+.stat{display:flex;gap:26px;flex-wrap:wrap;margin-top:12px;font-size:13.5px;color:#6b7280}
+.stat b{display:block;font-size:19px;color:#1f2937;font-weight:650}
+.wrong{border:1px solid #eef1f6;border-radius:12px;padding:14px 16px;margin:12px 0}
+.wrong .q{font-weight:600;line-height:1.8}
+.wrong .a{font-size:13.5px;color:#6b7280;margin-top:6px}
+.wrong .a .no{color:#dc2626}
+.wrong .a .yes{color:#16a34a;font-weight:600}
+.wrong .e{font-size:13.5px;color:#374151;background:#f7f9fc;border-radius:8px;padding:8px 10px;margin-top:8px;line-height:1.75}
+.explain{border-radius:12px;padding:12px 14px;margin:14px 0 4px;font-size:13.8px;line-height:1.85}
+.explain.ok{background:#f2fbf5;border:1px solid #cdebd6}
+.explain.bad{background:#fdf4f4;border:1px solid #f2d2d2}
+.explain .head{font-weight:650;margin-bottom:4px}
+.list{list-style:none;padding:0;margin:6px 0 0}
+.list li{display:flex;justify-content:space-between;font-size:13.5px;color:#4b5563;padding:6px 0;border-bottom:1px dashed #eef1f6}
+.muted{color:#6b7280;font-size:13px}
+.mt8{margin-top:8px}.mt16{margin-top:16px}.mt24{margin-top:24px}
+.mask{position:fixed;inset:0;background:rgba(17,24,39,.35);display:flex;align-items:center;justify-content:center;z-index:50;padding:16px}
+.dlg{background:#fff;border-radius:14px;padding:22px 24px;max-width:380px;width:100%}
+.rev{border:1px solid #eef1f6;border-radius:12px;padding:14px 16px;margin:10px 0}
+.rev .h{display:flex;gap:8px;align-items:center;flex-wrap:wrap;margin-bottom:4px}
+.rev .n{font-weight:650;font-size:14px}
+.rev .q{font-weight:600;line-height:1.8}
+.rev .a{font-size:13.5px;color:#6b7280;margin-top:6px}
+.rev .e{font-size:13.4px;color:#374151;background:#f7f9fc;border-radius:8px;padding:8px 10px;margin-top:8px;line-height:1.8}
+@media(max-width:640px){
+  body{font-size:14.5px}
+  .wrap{padding:12px 10px 64px}
+  .card{padding:16px 14px;border-radius:14px}
+  h1{font-size:19px}
+  .bar .inner{padding:8px 10px;gap:8px 12px}
+  .bar .meta{font-size:12.5px}
+  .btn{padding:8px 13px;font-size:13.5px}
+  .opt{padding:11px 12px;margin:8px 0}
+  .stem{font-size:16px;line-height:1.8}
+  .seg button{padding:7px 12px;font-size:13.5px}
+  .sheet{grid-template-columns:repeat(auto-fill,minmax(40px,1fr));gap:6px}
+  .sheet button{height:38px}
+  .score{font-size:44px}
+  .stat{gap:18px}
+}
+</style>
+</head>
+<body>
+<div id="app"></div>
+<script id="bank" type="application/json">__BANK__</script>
+<script>
+if ('serviceWorker' in navigator && location.protocol.indexOf('http') === 0) {
+  window.addEventListener('load', function(){ navigator.serviceWorker.register('sw.js').catch(function(){}); });
+}
+</script>
+<script>
+(function(){
+'use strict';
+
+var BANK = JSON.parse(document.getElementById('bank').textContent);
+var LS = { wrong: 'xf_exam_wrong', hist: 'xf_exam_hist', seen: 'xf_exam_seen' };
+var LETTER = ['A','B','C','D','E'];
+var MIX = { s: 0.6, m: 0.2, j: 0.2 };
+var TNAME = { s: '单选', m: '多选', j: '判断' };
+
+function load(k, d){ try { var v = localStorage.getItem(k); return v ? JSON.parse(v) : d; } catch(e){ return d; } }
+function save(k, v){ try { localStorage.setItem(k, JSON.stringify(v)); } catch(e){} }
+function esc(s){ return String(s == null ? '' : s).replace(/[&<>"]/g, function(c){ return {'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]; }); }
+function shuffle(a){ for (var i=a.length-1; i>0; i--){ var j=Math.floor(Math.random()*(i+1)); var t=a[i]; a[i]=a[j]; a[j]=t; } return a; }
+function fmt(sec){ var m=Math.floor(sec/60), s=sec%60; return (m<10?'0':'')+m+':'+(s<10?'0':'')+s; }
+function typeOf(q){ return q.t || 's'; }
+function isRight(q, a){
+  if (a === null || a === undefined) return false;
+  if (typeOf(q) === 'm'){
+    if (!Array.isArray(a) || !a.length) return false;
+    if (a.length !== q.ans.length) return false;
+    return a.slice().sort().join(',') === q.ans.slice().sort().join(',');
+  }
+  return a === q.ans;
+}
+function answered(a){ return a !== null && a !== undefined && !(Array.isArray(a) && a.length === 0); }
+function ansText(q){
+  if (typeOf(q) === 'm') return q.ans.slice().sort().map(function(i){ return LETTER[i] + '．' + q.opts[i]; }).join('；');
+  return LETTER[q.ans] + '．' + q.opts[q.ans];
+}
+function myText(q, a){
+  if (a === null || a === undefined || (Array.isArray(a) && !a.length)) return '未作答';
+  if (typeOf(q) === 'm') return a.slice().sort().map(function(i){ return LETTER[i] + '．' + q.opts[i]; }).join('；');
+  return LETTER[a] + '．' + q.opts[a];
+}
+function quotas(n){
+  var s = Math.round(n * MIX.s), m = Math.round(n * MIX.m);
+  return { s: s, m: m, j: Math.max(0, n - s - m) };
+}
+
+var SEEN = new Set(load(LS.seen, []));
+var S = { screen:'setup', paper:[], ans:[], locked:[], idx:0, sheet:false, t0:0, timer:null,
+          result:null, size:100, mode:'balanced', fresh:true, confirm:false,
+          practice:false, review:false, filter:'all' };
+
+/* ---------- 抽题 ---------- */
+function pickFrom(pool, k, balanced){
+  if (k <= 0 || !pool.length) return [];
+  var groups = {};
+  pool.forEach(function(q){ var g = q.g || q.id; (groups[g] = groups[g] || []).push(q); });
+  var reps = [];
+  Object.keys(groups).forEach(function(g){
+    var arr = groups[g], src = arr;
+    if (S.fresh){
+      var u = arr.filter(function(q){ return !SEEN.has(q.id); });
+      if (u.length) src = u;
+    }
+    reps.push(src[Math.floor(Math.random()*src.length)]);
+  });
+  shuffle(reps);
+  var out = [];
+  if (balanced){
+    var byCat = {};
+    reps.forEach(function(r){ (byCat[r.cat] = byCat[r.cat] || []).push(r); });
+    var cats = Object.keys(byCat);
+    var total = reps.length;
+    var alloc = cats.map(function(c){
+      var exact = k * byCat[c].length / total;
+      return { c: c, k: Math.floor(exact), f: exact - Math.floor(exact) };
+    });
+    var left = k - alloc.reduce(function(s,a){ return s + a.k; }, 0);
+    alloc.sort(function(a,b){ return b.f - a.f; });
+    for (var i=0; i<left; i++){ alloc[i % alloc.length].k++; }
+    alloc.forEach(function(a){
+      out = out.concat(byCat[a.c].slice(0, Math.min(a.k, byCat[a.c].length)));
+    });
+  } else {
+    out = reps.slice(0, k);
+  }
+  if (out.length < k){
+    var ids = {};
+    out.forEach(function(q){ ids[q.id] = 1; });
+    var rest = shuffle(pool.filter(function(q){ return !ids[q.id]; }));
+    out = out.concat(rest.slice(0, k - out.length));
+  }
+  return out.slice(0, k);
+}
+
+function buildPaper(n, balanced){
+  n = Math.min(n, BANK.length);
+  var q = quotas(n);
+  var byType = { s: [], m: [], j: [] };
+  BANK.forEach(function(x){ var t = typeOf(x); (byType[t] = byType[t] || []).push(x); });
+  var chosen = [];
+  chosen = chosen.concat(pickFrom(byType.s, q.s, balanced));
+  chosen = chosen.concat(pickFrom(byType.m, q.m, balanced));
+  chosen = chosen.concat(pickFrom(byType.j, q.j, balanced));
+  var seenG = {}, uniq = [];
+  chosen.forEach(function(x){ var g = x.g || x.id; if (!seenG[g]){ seenG[g] = 1; uniq.push(x); } });
+  chosen = uniq;
+  if (chosen.length < n){
+    var ids = {};
+    chosen.forEach(function(x){ ids[x.id] = 1; });
+    var rest = shuffle(BANK.filter(function(x){
+      var g = x.g || x.id;
+      return !ids[x.id] && !seenG[g];
+    }));
+    chosen = chosen.concat(rest.slice(0, n - chosen.length));
+  }
+  return shuffle(chosen.slice(0, n));
+}
+
+/* ---------- 断点续做 ---------- */
+var SESSION_KEY = 'xf_session_v1';
+function saveSession(){
+  if (S.screen !== 'exam' || !S.paper.length) return;
+  save(SESSION_KEY, {
+    ids: S.paper.map(function(q){ return q.id; }),
+    stems: S.paper.map(function(q){ return q.stem; }),
+    ans: S.ans, locked: S.locked, idx: S.idx,
+    practice: S.practice, t0: S.t0
+  });
+}
+function clearSession(){ try { localStorage.removeItem(SESSION_KEY); } catch(e){} }
+function loadSession(){
+  var d = load(SESSION_KEY, null);
+  if (!d || !d.ids || !d.ids.length) return null;
+  var map = {};
+  BANK.forEach(function(q){ map[q.id] = q; });
+  var paper = [], ans = [], locked = [];
+  for (var i = 0; i < d.ids.length; i++){
+    var q = map[d.ids[i]];
+    if (!q || q.stem !== d.stems[i]) return null;
+    paper.push(q);
+    ans.push(d.ans && d.ans[i] !== undefined ? d.ans[i] : (typeOf(q) === 'm' ? [] : null));
+    locked.push(d.locked ? !!d.locked[i] : false);
+  }
+  return { paper: paper, ans: ans, locked: locked, idx: Math.min(d.idx || 0, paper.length - 1),
+           practice: !!d.practice, t0: d.t0 || Date.now() };
+}
+function resumeSession(){
+  var s = loadSession();
+  if (!s) return;
+  S.paper = s.paper; S.ans = s.ans; S.locked = s.locked; S.idx = s.idx;
+  S.practice = s.practice; S.t0 = s.t0;
+  S.screen = 'exam'; S.sheet = false; S.confirm = false; S.result = null;
+  stopClock(); render(); startClock(); window.scrollTo(0,0);
+}
+
+function exportData(){
+  var data = { v: 1, wrong: load(LS.wrong, []), hist: load(LS.hist, []), seen: load(LS.seen, []) };
+  var blob = new Blob([JSON.stringify(data)], { type: 'application/json' });
+  var a = document.createElement('a');
+  a.href = URL.createObjectURL(blob);
+  a.download = '消防刷题数据_' + new Date().toISOString().slice(0,10) + '.json';
+  document.body.appendChild(a); a.click();
+  setTimeout(function(){ URL.revokeObjectURL(a.href); a.remove(); }, 2000);
+}
+function importData(file){
+  var reader = new FileReader();
+  reader.onload = function(){
+    try {
+      var d = JSON.parse(reader.result);
+      if (d && Array.isArray(d.wrong)) save(LS.wrong, d.wrong);
+      if (d && Array.isArray(d.hist)) save(LS.hist, d.hist);
+      if (d && Array.isArray(d.seen)) save(LS.seen, d.seen);
+      render();
+    } catch(e){}
+  };
+  reader.readAsText(file);
+}
+
+/* ---------- 视图 ---------- */
+function typeStat(){
+  var c = { s: 0, m: 0, j: 0 };
+  BANK.forEach(function(x){ c[typeOf(x)] = (c[typeOf(x)] || 0) + 1; });
+  return c;
+}
+
+function viewSetup(){
+  var hist = load(LS.hist, []);
+  var wrongBook = load(LS.wrong, []);
+  var ts = typeStat();
+  var h = '';
+  h += '<div class="card">';
+  h += '<h1>消防设施操作员（中级·监控方向）模拟考试</h1>';
+  h += '<p class="sub">题库共 <b>' + BANK.length + '</b> 道：单选 ' + ts.s + ' · 多选 ' + ts.m + ' · 判断 ' + ts.j + '　｜　按知识点分组去重</p>';
+  h += '<div class="rule"></div>';
+
+  var sess = loadSession();
+  if (sess){
+    var sDone = sess.ans.filter(answered).length;
+    h += '<div class="explain ok" style="margin:0 0 16px">';
+    h += '<div class="head">上次没做完，可以接着答</div>';
+    h += '<div>' + (sess.practice ? '练习模式' : '考试模式') + ' · ' + sess.paper.length + ' 题 · 做到第 ' + (sess.idx + 1) + ' 题 · 已答 ' + sDone + ' 题</div>';
+    h += '<div class="row mt8"><button class="btn primary" data-act="resume">继续上次</button><button class="btn" data-act="discard">放弃这份</button></div>';
+    h += '</div>';
+  }
+
+  h += '<h2>模式</h2><div class="row"><div class="seg">';
+  h += '<button data-act="pmode" data-p="0" class="' + (!S.practice?'on':'') + '">考试模式</button>';
+  h += '<button data-act="pmode" data-p="1" class="' + (S.practice?'on':'') + '">练习模式</button>';
+  h += '</div></div>';
+  h += '<p class="muted mt8">' + (S.practice
+      ? '练习模式：选完立刻判对错并显示解析，答过不能改，适合边做边记。'
+      : '考试模式：全部做完交卷后统一评分，交卷后可在答题卡里逐题看解析。') + '</p>';
+
+  var sizes = [20,50,100,150,200].filter(function(n){ return n <= BANK.length; });
+  if (!sizes.length) sizes = [BANK.length];
+  var curSize = sizes.indexOf(S.size) >= 0 ? S.size : sizes[sizes.length - 1];
+  h += '<h2 class="mt24">题量</h2><div class="row"><div class="seg">';
+  sizes.forEach(function(n){
+    h += '<button data-act="size" data-n="' + n + '" class="' + (curSize===n?'on':'') + '">' + n + ' 题</button>';
+  });
+  h += '</div></div>';
+
+  var qq = quotas(curSize);
+  h += '<p class="muted mt8">试卷结构：单选 ' + qq.s + ' 题 · 多选 ' + qq.m + ' 题 · 判断 ' + qq.j + ' 题（6 : 2 : 2）</p>';
+
+  h += '<h2 class="mt24">抽题方式</h2><div class="row"><div class="seg">';
+  h += '<button data-act="mode" data-m="balanced" class="' + (S.mode==='balanced'?'on':'') + '">模块均衡</button>';
+  h += '<button data-act="mode" data-m="random" class="' + (S.mode==='random'?'on':'') + '">完全随机</button>';
+  h += '</div></div>';
+  h += '<div class="row mt16"><label class="muted"><input type="checkbox" id="fresh" ' + (S.fresh?'checked':'') + '> 优先抽取没做过的题（降低重复度）</label></div>';
+  h += '<div class="mt24"><button class="btn primary" data-act="start"' + (BANK.length ? '' : ' disabled') + '>' + (S.practice ? '开始练习' : '开始考试') + '</button>';
+  if (wrongBook.length) h += ' <button class="btn" data-act="redo">重做错题本（' + wrongBook.length + ' 题）</button>';
+  h += '</div>';
+
+  var cats = {};
+  BANK.forEach(function(x){ cats[x.cat] = (cats[x.cat] || 0) + 1; });
+  h += '<div class="rule"></div><h2>题库构成</h2><ul class="list">';
+  Object.keys(cats).sort().forEach(function(c){
+    h += '<li><span>' + esc(c) + '</span><span>' + cats[c] + ' 道</span></li>';
+  });
+  h += '</ul>';
+  if (hist.length){
+    h += '<div class="rule"></div><h2>最近成绩</h2><ul class="list">';
+    hist.slice(-5).reverse().forEach(function(r){
+      var d = new Date(r.t);
+      h += '<li><span>' + d.getFullYear() + '-' + (d.getMonth()+1) + '-' + d.getDate() + ' ' + (d.getHours()<10?'0':'') + d.getHours() + ':' + (d.getMinutes()<10?'0':'') + d.getMinutes() + ' · ' + r.n + ' 题</span><span>' + r.score + ' 分</span></li>';
+    });
+    h += '</ul>';
+  }
+  h += '<div class="rule"></div><h2>数据</h2><div class="row">';
+  h += '<button class="btn" data-act="exportdata">导出错题与成绩</button>';
+  h += '<button class="btn" data-act="importdata">导入数据</button>';
+  h += '<input type="file" id="impfile" accept=".json,application/json" style="display:none">';
+  h += '</div><p class="muted mt8">导出的 json 可以在另一台设备导入，换手机时错题本和成绩不丢。</p>';
+  h += '<p class="muted mt16">说明：题库为按中级监控考纲整理的练习题库，非官方真题；涉及具体数值请以现行规范原文为准。多选题少选、多选、错选均不得分。答题、错题本、成绩均只保存在本机浏览器。</p>';
+  h += '</div>';
+  return h;
+}
+
+function viewExam(){
+  var q = S.paper[S.idx];
+  var t = typeOf(q);
+  var a = S.ans[S.idx];
+  var answeredCount = S.ans.filter(answered).length;
+  var rev = S.practice && (t === 'm' ? S.locked[S.idx] : answered(a));
+  var rightN = 0, wrongN = 0;
+  if (S.practice){
+    S.paper.forEach(function(x, i){
+      var settled = typeOf(x) === 'm' ? S.locked[i] : answered(S.ans[i]);
+      if (!settled) return;
+      if (isRight(x, S.ans[i])) rightN++; else wrongN++;
+    });
+  }
+  var h = '';
+  h += '<div class="bar"><div class="inner">';
+  h += '<span class="meta">第 <b>' + (S.idx+1) + '</b> / ' + S.paper.length + ' 题</span>';
+  h += '<span class="meta">已答 <b id="answeredCount">' + answeredCount + '</b> 题</span>';
+  if (S.practice) h += '<span class="meta">对 <b>' + rightN + '</b> · 错 <b>' + wrongN + '</b></span>';
+  h += '<span class="meta">用时 <b id="clock">00:00</b></span>';
+  h += '<span class="spacer"></span>';
+  h += '<button class="btn" data-act="sheet">答题卡</button> ';
+  h += S.practice
+    ? '<button class="btn primary" data-act="finish">结束练习</button>'
+    : '<button class="btn primary" data-act="submit">交卷</button>';
+  h += '</div></div>';
+
+  h += '<div class="wrap"><div class="card qwrap">';
+  h += '<span class="chip">' + esc(q.cat) + '</span> <span class="chip type">' + (TNAME[t] || '单选') + '</span>';
+  h += '<div class="stem">' + esc(q.stem) + '</div>';
+  if (t === 'm' && !rev) h += '<div class="tip">多选题：选出全部正确选项后点「确认本题」查看结果</div>';
+  h += '<div id="opts">';
+  q.opts.forEach(function(text, i){
+    var on = t === 'm' ? (Array.isArray(a) && a.indexOf(i) >= 0) : (a === i);
+    var cls = 'opt';
+    if (t === 'm') cls += ' sq';
+    if (rev){
+      var good = t === 'm' ? (q.ans.indexOf(i) >= 0) : (q.ans === i);
+      if (good) cls += ' ok';
+      else if (on) cls += ' bad';
+      cls += ' lock';
+    } else if (on){
+      cls += ' on';
+    }
+    h += '<div class="' + cls + '" data-act="pick" data-i="' + i + '">';
+    h += '<span class="tag">' + LETTER[i] + '</span><span>' + esc(text) + '</span></div>';
+  });
+  h += '</div>';
+  h += '<div class="swipe-hint">← 左右滑动翻题 →</div>';
+
+  if (rev){
+    var good = isRight(q, a) || isRight(q, (S.locked[S.idx] ? a : a));
+    h += '<div class="explain ' + (isRight(q, a) ? 'ok' : 'bad') + '">';
+    h += '<div class="head">' + (isRight(q, a) ? '✓ 答对了' : '✗ 答错了') + '</div>';
+    if (!isRight(q, a)) h += '<div>正确答案：<b>' + esc(ansText(q)) + '</b></div>';
+    if (q.exp) h += '<div>' + esc(q.exp) + '</div>';
+    h += '</div>';
+  }
+
+  h += '<div class="row mt24">';
+  h += '<button class="btn" data-act="prev"' + (S.idx===0?' disabled':'') + '>上一题</button>';
+  if (t === 'm' && S.practice && !rev && answered(a)){
+    h += '<button class="btn primary" data-act="check">确认本题</button>';
+  } else {
+    h += '<button class="btn primary" data-act="next">' + (S.idx===S.paper.length-1 ? (S.practice ? '结束练习' : '最后一题') : '下一题') + '</button>';
+  }
+  h += '<span class="spacer"></span>';
+  h += '<button class="btn" data-act="sheet">答题卡</button>';
+  h += '</div>';
+
+  if (S.sheet){
+    h += '<div class="rule"></div><div class="row"><h2 style="margin:0">答题卡</h2><span class="muted">蓝色为已答，点击跳转</span></div><div class="sheet">';
+    S.paper.forEach(function(x, i){
+      var cls = answered(S.ans[i]) ? 'done' : '';
+      if (i === S.idx) cls += ' cur';
+      h += '<button class="' + cls + '" data-act="jump" data-i="' + i + '">' + (i+1) + '</button>';
+    });
+    h += '</div>';
+  }
+  h += '</div></div>';
+
+  if (S.confirm){
+    var left = S.paper.length - answeredCount;
+    h += '<div class="mask"><div class="dlg"><h2>确认交卷</h2><p class="sub">共 ' + S.paper.length + ' 题，已答 ' + answeredCount + ' 题' + (left ? '，还有 <b>' + left + '</b> 题未作答' : '') + '。交卷后将立即评分。</p>';
+    h += '<div class="row mt16"><button class="btn" data-act="cancel">再检查一下</button><button class="btn primary" data-act="do-submit">确认交卷</button></div></div></div>';
+  }
+  return h;
+}
+
+function viewResult(){
+  var r = S.result;
+  var h = '<div class="card">';
+  h += '<h1>' + (r.practice ? '练习结果' : '考试结果') + '</h1>';
+  h += '<p class="sub">' + (r.practice ? '本轮抽题 ' + r.n + ' 道，已答 ' + r.done + ' 道' : '共 ' + r.n + ' 题') + ' · 用时 ' + fmt(r.sec) + '</p>';
+  h += '<div class="mt16"><span class="score">' + r.score + '<small> 分</small></span><span class="badge ' + (r.score>=60?'ok':'no') + '">' + (r.score>=60?'合格':'未达标') + '</span></div>';
+  h += '<div class="stat"><div><b>' + r.right + '</b>答对</div><div><b>' + r.wrong + '</b>答错</div><div><b>' + r.blank + '</b>未答</div><div><b>' + r.rate + '%</b>正确率</div></div>';
+  var ts = r.types, tline = [];
+  ['s','m','j'].forEach(function(k){ if (ts[k] && ts[k].t) tline.push(TNAME[k] + ' ' + ts[k].r + '/' + ts[k].t); });
+  h += '<p class="muted mt8">题型得分：' + tline.join('　·　') + '</p>';
+  h += '<div class="rule"></div><h2>各模块得分</h2>';
+  Object.keys(r.cats).sort().forEach(function(c){
+    var s = r.cats[c], p = s.t ? Math.round(s.r / s.t * 100) : 0;
+    h += '<div style="margin:10px 0"><div class="row" style="justify-content:space-between"><span class="muted">' + esc(c) + '</span><span class="muted">' + s.r + ' / ' + s.t + '　' + p + '%</span></div>';
+    h += '<div style="height:6px;background:#eef1f6;border-radius:99px;overflow:hidden;margin-top:5px"><div style="height:100%;width:' + p + '%;background:#2563eb;border-radius:99px"></div></div></div>';
+  });
+  h += '<div class="rule"></div><h2>错题回顾（' + r.wrongItems.length + ' 题）</h2>';
+  if (!r.wrongItems.length){
+    h += '<p class="muted">' + (r.blank ? '没有答错的题，但有 ' + r.blank + ' 题未作答。' : '全部答对，太棒了。') + '</p>';
+  } else {
+    r.wrongItems.forEach(function(w, k){
+      var q = w.q;
+      h += '<div class="wrong"><div class="q">' + (k+1) + '. ' + esc(q.stem) + ' <span class="chip type">' + (TNAME[typeOf(q)] || '单选') + '</span></div>';
+      h += '<div class="a">正确答案：<span class="yes">' + esc(ansText(q)) + '</span>　你的答案：<span class="no">' + esc(myText(q, w.a)) + '</span></div>';
+      if (q.exp) h += '<div class="e">' + esc(q.exp) + '</div>';
+      h += '</div>';
+    });
+  }
+  h += '<div class="row mt24">';
+  h += '<button class="btn primary" data-act="review">答题卡 · 逐题解析</button>';
+  h += '<button class="btn" data-act="again">' + (r.practice ? '再练一套' : '再来一套') + '</button>';
+  h += '<button class="btn" data-act="home">返回首页</button>';
+  if (r.wrongItems.length) h += '<button class="btn" data-act="redo">重做这套错题</button>';
+  h += '<button class="btn" data-act="export">导出错题</button></div>';
+  h += '<p class="muted mt16">' + (r.wrongItems.length ? '错题已自动加入错题本（做对的题会从错题本移除）。' : '本套没有错题。') + '</p>';
+  h += '</div>';
+  return h;
+}
+
+function viewReview(){
+  var r = S.result;
+  var h = '<div class="card">';
+  h += '<h1>答题卡 · 逐题解析</h1>';
+  h += '<p class="sub">共 ' + r.n + ' 题 · 答对 ' + r.right + ' · 答错 ' + r.wrong + ' · 未答 ' + r.blank + '</p>';
+  h += '<div class="row mt16"><div class="seg">';
+  h += '<button data-act="filter" data-f="all" class="' + (S.filter==='all'?'on':'') + '">全部</button>';
+  h += '<button data-act="filter" data-f="wrong" class="' + (S.filter==='wrong'?'on':'') + '">只看错题</button>';
+  h += '</div><span class="spacer"></span><button class="btn" data-act="back">返回结果</button></div>';
+  h += '<div class="rule"></div>';
+
+  S.paper.forEach(function(q, i){
+    var a = S.ans[i];
+    var ok = isRight(q, a);
+    if (S.filter === 'wrong' && (ok || !answered(a))) return;
+    h += '<div class="rev"><div class="h"><span class="n">' + (i+1) + '.</span>';
+    h += '<span class="chip type">' + (TNAME[typeOf(q)] || '单选') + '</span>';
+    h += '<span class="chip">' + esc(q.cat) + '</span>';
+    h += '<span class="chip ' + (ok ? '' : '') + '" style="background:' + (ok ? '#e8f7ee' : (answered(a) ? '#fdecec' : '#f1f4f9')) + ';color:' + (ok ? '#16a34a' : (answered(a) ? '#dc2626' : '#6b7280')) + '">' + (ok ? '答对' : (answered(a) ? '答错' : '未答')) + '</span>';
+    h += '</div>';
+    h += '<div class="q">' + esc(q.stem) + '</div>';
+    h += '<div class="a">正确答案：<span class="yes">' + esc(ansText(q)) + '</span>　你的答案：<span class="no">' + esc(myText(q, a)) + '</span></div>';
+    if (q.exp) h += '<div class="e">' + esc(q.exp) + '</div>';
+    h += '</div>';
+  });
+  h += '</div>';
+  return h;
+}
+
+function render(keepScroll){
+  var y = window.scrollY;
+  var app = document.getElementById('app');
+  if (S.screen === 'setup') app.innerHTML = viewSetup();
+  else if (S.screen === 'exam') app.innerHTML = viewExam();
+  else if (S.screen === 'review') app.innerHTML = viewReview();
+  else app.innerHTML = viewResult();
+  window.scrollTo(0, keepScroll ? y : 0);
+  if (S.screen === 'exam') startClock();
+}
+
+function startClock(){
+  if (S.timer) return;
+  S.timer = setInterval(function(){
+    var el = document.getElementById('clock');
+    if (!el) return;
+    el.textContent = fmt(Math.floor((Date.now() - S.t0) / 1000));
+  }, 1000);
+}
+function stopClock(){ if (S.timer){ clearInterval(S.timer); S.timer = null; } }
+
+function startExam(ids){
+  var paper;
+  if (ids){
+    var set = {};
+    ids.forEach(function(x){ set[x] = 1; });
+    paper = shuffle(BANK.filter(function(q){ return set[q.id]; }));
+    if (!paper.length) return;
+  } else {
+    var n = S.practice ? 200 : S.size;
+    paper = buildPaper(n, S.mode === 'balanced');
+  }
+  S.paper = paper;
+  S.ans = paper.map(function(q){ return typeOf(q) === 'm' ? [] : null; });
+  S.locked = paper.map(function(){ return false; });
+  S.idx = 0;
+  S.sheet = false;
+  S.confirm = false;
+  S.result = null;
+  S.review = false;
+  S.filter = 'all';
+  S.t0 = Date.now();
+  S.screen = 'exam';
+  stopClock();
+  saveSession();
+  render();
+  startClock();
+  window.scrollTo(0,0);
+}
+
+function pick(i){
+  var q = S.paper[S.idx];
+  if (S.practice && S.locked[S.idx]) return;
+  if (S.practice && typeOf(q) !== 'm' && answered(S.ans[S.idx])) return;
+  if (typeOf(q) === 'm'){
+    var cur = Array.isArray(S.ans[S.idx]) ? S.ans[S.idx].slice() : [];
+    var k = cur.indexOf(i);
+    if (k >= 0) cur.splice(k, 1); else cur.push(i);
+    cur.sort();
+    S.ans[S.idx] = cur;
+    refreshOpts();
+    saveSession();
+    if (S.practice) render(true);
+    return;
+  }
+  S.ans[S.idx] = i;
+  saveSession();
+  if (S.practice){ render(true); return; }
+  refreshOpts();
+}
+
+function refreshOpts(){
+  var q = S.paper[S.idx], t = typeOf(q), a = S.ans[S.idx];
+  var box = document.getElementById('opts');
+  if (box){
+    Array.prototype.forEach.call(box.children, function(el, i){
+      var on = t === 'm' ? (Array.isArray(a) && a.indexOf(i) >= 0) : (a === i);
+      el.className = 'opt' + (on ? ' on' : '') + (t === 'm' ? ' sq' : '');
+    });
+  }
+  var cnt = document.getElementById('answeredCount');
+  if (cnt) cnt.textContent = S.ans.filter(answered).length;
+}
+
+function goto(i, dir){
+  if (i < 0 || i >= S.paper.length) return;
+  if (i === S.idx) return;
+  if (S.navLock) return;
+  S.navLock = false;
+  if (dir === undefined) dir = i > S.idx ? 1 : -1;
+  var wrap = document.querySelector('.qwrap');
+  var reduce = window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+  var doRender = function(){
+    S.idx = i;
+    saveSession();
+    render(true);
+    var w = document.querySelector('.qwrap');
+    if (w && !reduce){
+      w.classList.remove('anim-in-left', 'anim-in-right');
+      w.classList.add(dir > 0 ? 'anim-in-right' : 'anim-in-left');
+    }
+  };
+  if (wrap && !reduce){
+    S.navLock = true;
+    wrap.classList.remove('anim-in-left', 'anim-in-right');
+    wrap.classList.add(dir > 0 ? 'anim-out-left' : 'anim-out-right');
+    setTimeout(function(){ S.navLock = false; doRender(); }, 70);
+  } else {
+    doRender();
+  }
+}
+
+function finish(){
+  stopClock();
+  var n = S.paper.length;
+  var right = 0, wrong = 0, blank = 0, done = 0;
+  var wrongItems = [];
+  var cats = {}, types = { s:{r:0,t:0}, m:{r:0,t:0}, j:{r:0,t:0} };
+  S.paper.forEach(function(q, i){
+    var a = S.ans[i], t = typeOf(q);
+    cats[q.cat] = cats[q.cat] || { r: 0, t: 0 };
+    cats[q.cat].t++; types[t] = types[t] || { r: 0, t: 0 }; types[t].t++;
+    if (!answered(a)){ blank++; return; }
+    done++;
+    if (isRight(q, a)){ right++; cats[q.cat].r++; types[t].r++; }
+    else { wrong++; wrongItems.push({ q: q, a: a }); }
+  });
+  var denom = S.practice ? (done || 1) : n;
+  var score = Math.round(right / denom * 1000) / 10;
+  var sec = Math.floor((Date.now() - S.t0) / 1000);
+
+  var book = load(LS.wrong, []);
+  var set = new Set(book);
+  S.paper.forEach(function(q, i){
+    if (!answered(S.ans[i])) return;
+    if (isRight(q, S.ans[i])) set.delete(q.id); else set.add(q.id);
+  });
+  save(LS.wrong, Array.from(set));
+
+  var hist = load(LS.hist, []);
+  hist.push({ t: Date.now(), n: n, score: score });
+  if (hist.length > 50) hist = hist.slice(-50);
+  save(LS.hist, hist);
+
+  S.paper.forEach(function(q){ SEEN.add(q.id); });
+  var seenArr = Array.from(SEEN);
+  if (seenArr.length > 900) seenArr = seenArr.slice(-900);
+  save(LS.seen, seenArr);
+
+  clearSession();
+  S.result = { n: n, done: done, right: right, wrong: wrong, blank: blank, score: score, sec: sec,
+               rate: Math.round(right / denom * 1000) / 10, cats: cats, wrongItems: wrongItems,
+               types: types, practice: S.practice };
+  S.screen = 'result';
+  S.confirm = false;
+  render();
+}
+
+function exportWrong(){
+  var r = S.result, lines = [];
+  lines.push('消防设施操作员（中级·监控）错题本');
+  lines.push('导出时间：' + new Date().toLocaleString());
+  lines.push('');
+  r.wrongItems.forEach(function(w, k){
+    var q = w.q;
+    lines.push((k+1) + '. [' + q.cat + '·' + (TNAME[typeOf(q)] || '单选') + '] ' + q.stem);
+    q.opts.forEach(function(t, i){ lines.push('   ' + LETTER[i] + '．' + t); });
+    lines.push('   正确答案：' + ansText(q) + '　你的答案：' + myText(q, w.a));
+    if (q.exp) lines.push('   解析：' + q.exp);
+    lines.push('');
+  });
+  var blob = new Blob([lines.join('\n')], { type: 'text/plain;charset=utf-8' });
+  var a = document.createElement('a');
+  a.href = URL.createObjectURL(blob);
+  a.download = '错题本_' + new Date().toISOString().slice(0,10) + '.txt';
+  document.body.appendChild(a);
+  a.click();
+  setTimeout(function(){ URL.revokeObjectURL(a.href); a.remove(); }, 2000);
+}
+
+/* ---------- 交互 ---------- */
+document.addEventListener('click', function(e){
+  var el = e.target.closest ? e.target.closest('[data-act]') : null;
+  if (!el) return;
+  var act = el.getAttribute('data-act');
+  if (act === 'pmode'){ S.practice = el.getAttribute('data-p') === '1'; render(); }
+  else if (act === 'size'){ S.size = parseInt(el.getAttribute('data-n'), 10); render(); }
+  else if (act === 'mode'){ S.mode = el.getAttribute('data-m'); render(); }
+  else if (act === 'start'){ startExam(null); }
+  else if (act === 'pick'){ pick(parseInt(el.getAttribute('data-i'), 10)); }
+  else if (act === 'check'){ S.locked[S.idx] = true; render(true); }
+  else if (act === 'prev'){ goto(S.idx - 1); }
+  else if (act === 'next'){
+    if (S.idx < S.paper.length - 1) goto(S.idx + 1);
+    else finish();
+  }
+  else if (act === 'finish'){ finish(); }
+  else if (act === 'sheet'){ S.sheet = !S.sheet; render(true); }
+  else if (act === 'jump'){ S.idx = parseInt(el.getAttribute('data-i'), 10); S.sheet = false; render(true); }
+  else if (act === 'submit'){ S.confirm = true; render(true); }
+  else if (act === 'cancel'){ S.confirm = false; render(true); }
+  else if (act === 'do-submit'){ finish(); }
+  else if (act === 'again'){ startExam(null); }
+  else if (act === 'home'){ S.screen = 'setup'; S.sheet = false; S.review = false; render(); }
+  else if (act === 'review'){ S.screen = 'review'; S.filter = 'all'; render(); }
+  else if (act === 'back'){ S.screen = 'result'; render(); }
+  else if (act === 'filter'){ S.filter = el.getAttribute('data-f'); render(); }
+  else if (act === 'redo'){
+    if (S.result && S.result.wrongItems.length) startExam(S.result.wrongItems.map(function(w){ return w.q.id; }));
+    else startExam(load(LS.wrong, []));
+  }
+  else if (act === 'export'){ exportWrong(); }
+  else if (act === 'resume'){ resumeSession(); }
+  else if (act === 'discard'){ clearSession(); render(); }
+  else if (act === 'exportdata'){ exportData(); }
+  else if (act === 'importdata'){ var fi = document.getElementById('impfile'); if (fi) fi.click(); }
+});
+
+document.addEventListener('change', function(e){
+  if (e.target && e.target.id === 'fresh'){ S.fresh = e.target.checked; }
+  if (e.target && e.target.id === 'impfile' && e.target.files && e.target.files[0]){ importData(e.target.files[0]); }
+});
+
+var TOUCH = null;
+document.addEventListener('touchstart', function(e){
+  if (S.screen !== 'exam' || S.confirm || S.sheet){ TOUCH = null; return; }
+  if (!e.touches || e.touches.length !== 1){ TOUCH = null; return; }
+  var t = e.touches[0];
+  TOUCH = { x: t.clientX, y: t.clientY, t: Date.now() };
+}, { passive: true });
+
+document.addEventListener('touchend', function(e){
+  if (!TOUCH || S.screen !== 'exam' || S.confirm || S.sheet){ TOUCH = null; return; }
+  var t = e.changedTouches && e.changedTouches[0];
+  if (!t){ TOUCH = null; return; }
+  var dx = t.clientX - TOUCH.x;
+  var dy = t.clientY - TOUCH.y;
+  var dt = Date.now() - TOUCH.t;
+  TOUCH = null;
+  if (dt > 800) return;
+  if (Math.abs(dx) < 60) return;
+  if (Math.abs(dx) < Math.abs(dy) * 1.3) return;
+  if (dx < 0){
+    if (S.idx < S.paper.length - 1){ goto(S.idx + 1); }
+  } else {
+    if (S.idx > 0){ goto(S.idx - 1); }
+  }
+}, { passive: true });
+
+document.addEventListener('touchcancel', function(){ TOUCH = null; }, { passive: true });
+
+document.addEventListener('keydown', function(e){
+  if (S.screen === 'exam' && !S.confirm){
+    var k = e.key;
+    if (k >= '1' && k <= '4'){ pick(parseInt(k,10) - 1); }
+    else if (k === 'ArrowLeft'){ goto(S.idx - 1); }
+    else if (k === 'ArrowRight' || k === 'Enter'){ if (S.idx < S.paper.length - 1) goto(S.idx + 1); }
+    else if (k === 'Escape'){ S.sheet = false; render(true); }
+  }
+});
+
+render();
+})();
+</script>
+</body>
+</html>
