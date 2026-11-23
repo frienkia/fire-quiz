@@ -10,6 +10,7 @@
 <meta name="apple-mobile-web-app-title" content="消防刷题">
 <style>
 *{box-sizing:border-box}
+html,body{overflow-x:hidden}
 body{margin:0;background:#f3f5f9;color:#1f2937;font:15px/1.75 -apple-system,BlinkMacSystemFont,"Segoe UI","Microsoft YaHei",sans-serif}
 .wrap{max-width:860px;margin:0 auto;padding:26px 16px 72px}
 .card{background:#fff;border:1px solid #e6eaf2;border-radius:16px;padding:24px 26px;box-shadow:0 4px 16px rgba(31,41,55,.05)}
@@ -48,6 +49,16 @@ h2{font-size:16px;margin:0 0 10px;font-weight:650}
 .spacer{flex:1}
 .stem{font-size:17px;font-weight:600;line-height:1.85;margin:14px 0 6px}
 .tip{font-size:12.5px;color:#6b7280;margin-bottom:4px}
+@keyframes q-out-left{from{opacity:1;transform:none}to{opacity:0;transform:translateX(-26%)}}
+@keyframes q-out-right{from{opacity:1;transform:none}to{opacity:0;transform:translateX(26%)}}
+@keyframes q-in-left{from{opacity:0;transform:translateX(-26%)}to{opacity:1;transform:none}}
+@keyframes q-in-right{from{opacity:0;transform:translateX(26%)}to{opacity:1;transform:none}}
+.card.qwrap{will-change:transform,opacity}
+.qwrap.anim-out-left{animation:q-out-left .13s ease-in both}
+.qwrap.anim-out-right{animation:q-out-right .13s ease-in both}
+.qwrap.anim-in-left{animation:q-in-left .19s cubic-bezier(.22,.61,.36,1) both}
+.qwrap.anim-in-right{animation:q-in-right .19s cubic-bezier(.22,.61,.36,1) both}
+@media(prefers-reduced-motion:reduce){.qwrap{animation:none!important}}
 .swipe-hint{display:none;text-align:center;font-size:12px;color:#9ca3af;margin-top:6px;letter-spacing:2px}
 @media(max-width:640px){.swipe-hint{display:block}}
 .sheet{display:grid;grid-template-columns:repeat(auto-fill,minmax(46px,1fr));gap:8px;margin-top:12px}
@@ -389,7 +400,7 @@ function viewExam(){
     : '<button class="btn primary" data-act="submit">交卷</button>';
   h += '</div></div>';
 
-  h += '<div class="wrap"><div class="card">';
+  h += '<div class="wrap"><div class="card qwrap">';
   h += '<span class="chip">' + esc(q.cat) + '</span> <span class="chip type">' + (TNAME[t] || '单选') + '</span>';
   h += '<div class="stem">' + esc(q.stem) + '</div>';
   if (t === 'm' && !rev) h += '<div class="tip">多选题：选出全部正确选项后点「确认本题」查看结果</div>';
@@ -603,11 +614,32 @@ function refreshOpts(){
   if (cnt) cnt.textContent = S.ans.filter(answered).length;
 }
 
-function goto(i){
+function goto(i, dir){
   if (i < 0 || i >= S.paper.length) return;
-  S.idx = i;
-  saveSession();
-  render(true);
+  if (i === S.idx) return;
+  if (S.navLock) return;
+  S.navLock = false;
+  if (dir === undefined) dir = i > S.idx ? 1 : -1;
+  var wrap = document.querySelector('.qwrap');
+  var reduce = window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+  var doRender = function(){
+    S.idx = i;
+    saveSession();
+    render(true);
+    var w = document.querySelector('.qwrap');
+    if (w && !reduce){
+      w.classList.remove('anim-in-left', 'anim-in-right');
+      w.classList.add(dir > 0 ? 'anim-in-right' : 'anim-in-left');
+    }
+  };
+  if (wrap && !reduce){
+    S.navLock = true;
+    wrap.classList.remove('anim-in-left', 'anim-in-right');
+    wrap.classList.add(dir > 0 ? 'anim-out-left' : 'anim-out-right');
+    setTimeout(function(){ S.navLock = false; doRender(); }, 125);
+  } else {
+    doRender();
+  }
 }
 
 function finish(){
