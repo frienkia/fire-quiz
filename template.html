@@ -468,7 +468,7 @@ function viewExam(){
 
   if (S.confirm){
     var left = S.paper.length - answeredCount;
-    h += '<div class="mask"><div class="dlg"><h2>确认交卷</h2><p class="sub">共 ' + S.paper.length + ' 题，已答 ' + answeredCount + ' 题' + (left ? '，还有 <b>' + left + '</b> 题未作答' : '') + '。交卷后将立即评分。</p>';
+    h += '<div class="mask"><div class="dlg"><h2>确认交卷</h2><p class="sub">共 ' + S.paper.length + ' 题，已答 ' + answeredCount + ' 题' + (left ? '，还有 <b>' + left + '</b> 题未作答，将按正确率结算' : '') + '。交卷后立即出结果。</p>';
     h += '<div class="row mt16"><button class="btn" data-act="cancel">再检查一下</button><button class="btn primary" data-act="do-submit">确认交卷</button></div></div></div>';
   }
   return h;
@@ -487,8 +487,8 @@ function viewResult(){
     h += '<p class="muted mt8">得分 <b>' + r.pts + ' / ' + r.ptsTotal + '</b> 分（每题 0.5 分）</p>';
   } else {
     h += '<p class="muted mt8">' + (r.n < 200
-      ? '100 题练习按正确率统计；选 200 题做完才折算分数。'
-      : '没做完整套，按已答的正确率统计；把 200 题做完才折算分数。') + '</p>';
+      ? '100 题按正确率统计，不折算分数。'
+      : '没做完整套，按已答的正确率统计；整套 200 题做完才折算分数。') + '</p>';
   }
   h += '<div class="stat"><div><b>' + r.right + '</b>答对</div><div><b>' + r.wrong + '</b>答错</div><div><b>' + r.blank + '</b>未答</div><div><b>' + r.rate + '%</b>正确率</div></div>';
   var ts = r.types, tline = [];
@@ -687,8 +687,8 @@ function finish(){
   });
   var score = ptsTotal ? Math.round(pts / ptsTotal * 1000) / 10 : 0;
   var fullDone = done === n;
-  // 考试模式交卷 -> 一律按分数；练习模式只有 200 题且做完才按分数，其余按正确率
-  var scoreMode = S.practice ? (fullDone && n >= 200) : true;
+  // 只有"200 题整套做完"才折算分数；中途退出/没做完一律按正确率（考试、练习都一样）
+  var scoreMode = fullDone && n >= 200;
   var rate = Math.round(right / (S.practice ? (done || 1) : n) * 1000) / 10;
   var sec = Math.floor((Date.now() - S.t0) / 1000);
 
