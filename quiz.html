@@ -129,6 +129,8 @@ var LS = { wrong: 'xf_exam_wrong', hist: 'xf_exam_hist', seen: 'xf_exam_seen' };
 var LETTER = ['A','B','C','D','E'];
 var MIX = { s: 0.6, m: 0.2, j: 0.2 };
 var TNAME = { s: '单选', m: '多选', j: '判断' };
+var POINTS = { s: 1, m: 2, j: 1 };   // 每题分值：单选1分、多选2分、判断1分
+var PASS = 60;                        // 及格线（百分制）
 
 function load(k, d){ try { var v = localStorage.getItem(k); return v ? JSON.parse(v) : d; } catch(e){ return d; } }
 function save(k, v){ try { localStorage.setItem(k, JSON.stringify(v)); } catch(e){} }
@@ -136,6 +138,7 @@ function esc(s){ return String(s == null ? '' : s).replace(/[&<>"]/g, function(c
 function shuffle(a){ for (var i=a.length-1; i>0; i--){ var j=Math.floor(Math.random()*(i+1)); var t=a[i]; a[i]=a[j]; a[j]=t; } return a; }
 function fmt(sec){ var m=Math.floor(sec/60), s=sec%60; return (m<10?'0':'')+m+':'+(s<10?'0':'')+s; }
 function typeOf(q){ return q.t || 's'; }
+function pointsOf(q){ return POINTS[typeOf(q)] || 1; }
 function isRight(q, a){
   if (a === null || a === undefined) return false;
   if (typeOf(q) === 'm'){
@@ -338,6 +341,7 @@ function viewSetup(){
 
   var qq = quotas(curSize);
   h += '<p class="muted mt8">试卷结构：单选 ' + qq.s + ' 题 · 多选 ' + qq.m + ' 题 · 判断 ' + qq.j + ' 题（6 : 2 : 2）</p>';
+  h += '<p class="muted">计分：单选 1 分 · 多选 2 分 · 判断 1 分，按全卷折算百分制；练习模式没做完整套只显示正确率。</p>';
 
   h += '<h2 class="mt24">抽题方式</h2><div class="row"><div class="seg">';
   h += '<button data-act="mode" data-m="balanced" class="' + (S.mode==='balanced'?'on':'') + '">模块均衡</button>';
@@ -465,13 +469,23 @@ function viewExam(){
 function viewResult(){
   var r = S.result;
   var h = '<div class="card">';
+  var scoreMode = r.scoreMode;
   h += '<h1>' + (r.practice ? '练习结果' : '考试结果') + '</h1>';
   h += '<p class="sub">' + (r.practice ? '本轮抽题 ' + r.n + ' 道，已答 ' + r.done + ' 道' : '共 ' + r.n + ' 题') + ' · 用时 ' + fmt(r.sec) + '</p>';
-  h += '<div class="mt16"><span class="score">' + r.score + '<small> 分</small></span><span class="badge ' + (r.score>=60?'ok':'no') + '">' + (r.score>=60?'合格':'未达标') + '</span></div>';
+  h += '<div class="mt16"><span class="score">' + (scoreMode ? r.score : r.rate) + '<small>' + (scoreMode ? ' 分' : '%') + '</small></span>';
+  if (scoreMode) h += '<span class="badge ' + (r.score>=PASS?'ok':'no') + '">' + (r.score>=PASS?'合格':'未达标') + '</span>';
+  h += '</div>';
+  if (scoreMode){
+    h += '<p class="muted mt8">得分 <b>' + r.pts + ' / ' + r.ptsTotal + '</b> 分（折算百分制）· 单选 1 分 · 多选 2 分 · 判断 1 分</p>';
+  } else {
+    h += '<p class="muted mt8">没做完整套，按已答的正确率统计；把 200 题做完才会折算分数。</p>';
+  }
   h += '<div class="stat"><div><b>' + r.right + '</b>答对</div><div><b>' + r.wrong + '</b>答错</div><div><b>' + r.blank + '</b>未答</div><div><b>' + r.rate + '%</b>正确率</div></div>';
   var ts = r.types, tline = [];
-  ['s','m','j'].forEach(function(k){ if (ts[k] && ts[k].t) tline.push(TNAME[k] + ' ' + ts[k].r + '/' + ts[k].t); });
-  h += '<p class="muted mt8">题型得分：' + tline.join('　·　') + '</p>';
+  ['s','m','j'].forEach(function(k){
+    if (ts[k] && ts[k].t) tline.push(TNAME[k] + ' ' + ts[k].r + '/' + ts[k].t + ' 题' + (scoreMode ? '（' + ts[k].p + '/' + ts[k].pt + ' 分）' : ''));
+  });
+  h += '<p class="muted mt8">' + tline.join('　·　') + '</p>';
   h += '<div class="rule"></div><h2>各模块得分</h2>';
   Object.keys(r.cats).sort().forEach(function(c){
     var s = r.cats[c], p = s.t ? Math.round(s.r / s.t * 100) : 0;
@@ -647,18 +661,25 @@ function finish(){
   var n = S.paper.length;
   var right = 0, wrong = 0, blank = 0, done = 0;
   var wrongItems = [];
-  var cats = {}, types = { s:{r:0,t:0}, m:{r:0,t:0}, j:{r:0,t:0} };
+  var cats = {}, types = { s:{r:0,t:0,p:0,pt:0}, m:{r:0,t:0,p:0,pt:0}, j:{r:0,t:0,p:0,pt:0} };
+  var pts = 0, ptsTotal = 0;
   S.paper.forEach(function(q, i){
-    var a = S.ans[i], t = typeOf(q);
+    var a = S.ans[i], t = typeOf(q), p = pointsOf(q);
+    ptsTotal += p;
     cats[q.cat] = cats[q.cat] || { r: 0, t: 0 };
-    cats[q.cat].t++; types[t] = types[t] || { r: 0, t: 0 }; types[t].t++;
+    cats[q.cat].t++;
+    types[t] = types[t] || { r:0, t:0, p:0, pt:0 };
+    types[t].t++; types[t].pt += p;
     if (!answered(a)){ blank++; return; }
     done++;
-    if (isRight(q, a)){ right++; cats[q.cat].r++; types[t].r++; }
+    if (isRight(q, a)){ right++; pts += p; cats[q.cat].r++; types[t].r++; types[t].p += p; }
     else { wrong++; wrongItems.push({ q: q, a: a }); }
   });
-  var denom = S.practice ? (done || 1) : n;
-  var score = Math.round(right / denom * 1000) / 10;
+  var score = ptsTotal ? Math.round(pts / ptsTotal * 1000) / 10 : 0;
+  var fullDone = done === n;
+  // 练习模式没做完整套 -> 不算分数，按正确率；考试模式交卷 -> 一律按分数
+  var scoreMode = S.practice ? fullDone : true;
+  var rate = Math.round(right / (S.practice ? (done || 1) : n) * 1000) / 10;
   var sec = Math.floor((Date.now() - S.t0) / 1000);
 
   var book = load(LS.wrong, []);
@@ -670,7 +691,7 @@ function finish(){
   save(LS.wrong, Array.from(set));
 
   var hist = load(LS.hist, []);
-  hist.push({ t: Date.now(), n: n, score: score });
+  hist.push({ t: Date.now(), n: n, score: scoreMode ? score : rate, mode: scoreMode ? 'score' : 'rate' });
   if (hist.length > 50) hist = hist.slice(-50);
   save(LS.hist, hist);
 
@@ -681,8 +702,8 @@ function finish(){
 
   clearSession();
   S.result = { n: n, done: done, right: right, wrong: wrong, blank: blank, score: score, sec: sec,
-               rate: Math.round(right / denom * 1000) / 10, cats: cats, wrongItems: wrongItems,
-               types: types, practice: S.practice };
+               rate: rate, pts: pts, ptsTotal: ptsTotal, scoreMode: scoreMode, fullDone: fullDone,
+               cats: cats, wrongItems: wrongItems, types: types, practice: S.practice };
   S.screen = 'result';
   S.confirm = false;
   render();
