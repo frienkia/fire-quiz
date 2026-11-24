@@ -127,9 +127,9 @@ if ('serviceWorker' in navigator && location.protocol.indexOf('http') === 0) {
 var BANK = JSON.parse(document.getElementById('bank').textContent);
 var LS = { wrong: 'xf_exam_wrong', hist: 'xf_exam_hist', seen: 'xf_exam_seen' };
 var LETTER = ['A','B','C','D','E'];
-var MIX = { s: 0.6, m: 0.2, j: 0.2 };
+var MIX = { s: 0.5, m: 0.2, j: 0.3 };   // 单选 : 多选 : 判断 = 5 : 2 : 3（200 题 = 100/40/60）
 var TNAME = { s: '单选', m: '多选', j: '判断' };
-var POINTS = { s: 1, m: 2, j: 1 };   // 每题分值：单选1分、多选2分、判断1分
+var POINT = 0.5;                      // 每题 0.5 分，200 题满分 100
 var PASS = 60;                        // 及格线（百分制）
 
 function load(k, d){ try { var v = localStorage.getItem(k); return v ? JSON.parse(v) : d; } catch(e){ return d; } }
@@ -138,7 +138,7 @@ function esc(s){ return String(s == null ? '' : s).replace(/[&<>"]/g, function(c
 function shuffle(a){ for (var i=a.length-1; i>0; i--){ var j=Math.floor(Math.random()*(i+1)); var t=a[i]; a[i]=a[j]; a[j]=t; } return a; }
 function fmt(sec){ var m=Math.floor(sec/60), s=sec%60; return (m<10?'0':'')+m+':'+(s<10?'0':'')+s; }
 function typeOf(q){ return q.t || 's'; }
-function pointsOf(q){ return POINTS[typeOf(q)] || 1; }
+function pointsOf(q){ return POINT; }
 function isRight(q, a){
   if (a === null || a === undefined) return false;
   if (typeOf(q) === 'm'){
@@ -327,21 +327,29 @@ function viewSetup(){
   h += '<button data-act="pmode" data-p="1" class="' + (S.practice?'on':'') + '">练习模式</button>';
   h += '</div></div>';
   h += '<p class="muted mt8">' + (S.practice
-      ? '练习模式：选完立刻判对错并显示解析，答过不能改，适合边做边记。'
-      : '考试模式：全部做完交卷后统一评分，交卷后可在答题卡里逐题看解析。') + '</p>';
+      ? '练习模式：选完立刻判对错并显示解析，答过不能改；100 题看正确率，200 题看分数。'
+      : '考试模式：固定 200 题（单选 100 · 多选 40 · 判断 60），满分 100 分，60 分及格；交卷后可在答题卡里逐题看解析。') + '</p>';
 
-  var sizes = [20,50,100,150,200].filter(function(n){ return n <= BANK.length; });
-  if (!sizes.length) sizes = [BANK.length];
-  var curSize = sizes.indexOf(S.size) >= 0 ? S.size : sizes[sizes.length - 1];
-  h += '<h2 class="mt24">题量</h2><div class="row"><div class="seg">';
-  sizes.forEach(function(n){
-    h += '<button data-act="size" data-n="' + n + '" class="' + (curSize===n?'on':'') + '">' + n + ' 题</button>';
-  });
-  h += '</div></div>';
-
-  var qq = quotas(curSize);
-  h += '<p class="muted mt8">试卷结构：单选 ' + qq.s + ' 题 · 多选 ' + qq.m + ' 题 · 判断 ' + qq.j + ' 题（6 : 2 : 2）</p>';
-  h += '<p class="muted">计分：单选 1 分 · 多选 2 分 · 判断 1 分，按全卷折算百分制；练习模式没做完整套只显示正确率。</p>';
+  if (S.practice){
+    var sizes = [100, 200].filter(function(n){ return n <= BANK.length; });
+    if (!sizes.length) sizes = [Math.min(200, BANK.length)];
+    var curSize = sizes.indexOf(S.size) >= 0 ? S.size : sizes[sizes.length - 1];
+    h += '<h2 class="mt24">题量</h2><div class="row"><div class="seg">';
+    sizes.forEach(function(n){
+      h += '<button data-act="size" data-n="' + n + '" class="' + (curSize===n?'on':'') + '">' + n + ' 题</button>';
+    });
+    h += '</div></div>';
+    var qq = quotas(curSize);
+    h += '<p class="muted mt8">试卷结构：单选 ' + qq.s + ' · 多选 ' + qq.m + ' · 判断 ' + qq.j + '（5 : 2 : 3）</p>';
+    h += '<p class="muted">' + (curSize >= 200
+      ? '整套 200 题做完按分数：每题 0.5 分，满分 100 分，60 分及格；没做完只算正确率。'
+      : '100 题练习按正确率统计，不折算分数。') + '</p>';
+  } else {
+    var eq = quotas(200);
+    h += '<h2 class="mt24">试卷</h2><div class="row"><div class="seg"><button class="on">200 题 · 考试卷</button></div></div>';
+    h += '<p class="muted mt8">试卷结构：单选 ' + eq.s + ' · 多选 ' + eq.m + ' · 判断 ' + eq.j + '（5 : 2 : 3）</p>';
+    h += '<p class="muted">每题 0.5 分，满分 100 分，60 分及格；交卷即按分数评分。</p>';
+  }
 
   h += '<h2 class="mt24">抽题方式</h2><div class="row"><div class="seg">';
   h += '<button data-act="mode" data-m="balanced" class="' + (S.mode==='balanced'?'on':'') + '">模块均衡</button>';
@@ -363,7 +371,7 @@ function viewSetup(){
     h += '<div class="rule"></div><h2>最近成绩</h2><ul class="list">';
     hist.slice(-5).reverse().forEach(function(r){
       var d = new Date(r.t);
-      h += '<li><span>' + d.getFullYear() + '-' + (d.getMonth()+1) + '-' + d.getDate() + ' ' + (d.getHours()<10?'0':'') + d.getHours() + ':' + (d.getMinutes()<10?'0':'') + d.getMinutes() + ' · ' + r.n + ' 题</span><span>' + r.score + ' 分</span></li>';
+      h += '<li><span>' + d.getFullYear() + '-' + (d.getMonth()+1) + '-' + d.getDate() + ' ' + (d.getHours()<10?'0':'') + d.getHours() + ':' + (d.getMinutes()<10?'0':'') + d.getMinutes() + ' · ' + r.n + ' 题</span><span>' + (r.mode === 'rate' ? r.score + '%' : r.score + ' 分') + '</span></li>';
     });
     h += '</ul>';
   }
@@ -476,9 +484,11 @@ function viewResult(){
   if (scoreMode) h += '<span class="badge ' + (r.score>=PASS?'ok':'no') + '">' + (r.score>=PASS?'合格':'未达标') + '</span>';
   h += '</div>';
   if (scoreMode){
-    h += '<p class="muted mt8">得分 <b>' + r.pts + ' / ' + r.ptsTotal + '</b> 分（折算百分制）· 单选 1 分 · 多选 2 分 · 判断 1 分</p>';
+    h += '<p class="muted mt8">得分 <b>' + r.pts + ' / ' + r.ptsTotal + '</b> 分（每题 0.5 分）</p>';
   } else {
-    h += '<p class="muted mt8">没做完整套，按已答的正确率统计；把 200 题做完才会折算分数。</p>';
+    h += '<p class="muted mt8">' + (r.n < 200
+      ? '100 题练习按正确率统计；选 200 题做完才折算分数。'
+      : '没做完整套，按已答的正确率统计；把 200 题做完才折算分数。') + '</p>';
   }
   h += '<div class="stat"><div><b>' + r.right + '</b>答对</div><div><b>' + r.wrong + '</b>答错</div><div><b>' + r.blank + '</b>未答</div><div><b>' + r.rate + '%</b>正确率</div></div>';
   var ts = r.types, tline = [];
@@ -573,7 +583,7 @@ function startExam(ids){
     paper = shuffle(BANK.filter(function(q){ return set[q.id]; }));
     if (!paper.length) return;
   } else {
-    var n = S.practice ? 200 : S.size;
+    var n = S.practice ? S.size : 200;
     paper = buildPaper(n, S.mode === 'balanced');
   }
   S.paper = paper;
@@ -677,8 +687,8 @@ function finish(){
   });
   var score = ptsTotal ? Math.round(pts / ptsTotal * 1000) / 10 : 0;
   var fullDone = done === n;
-  // 练习模式没做完整套 -> 不算分数，按正确率；考试模式交卷 -> 一律按分数
-  var scoreMode = S.practice ? fullDone : true;
+  // 考试模式交卷 -> 一律按分数；练习模式只有 200 题且做完才按分数，其余按正确率
+  var scoreMode = S.practice ? (fullDone && n >= 200) : true;
   var rate = Math.round(right / (S.practice ? (done || 1) : n) * 1000) / 10;
   var sec = Math.floor((Date.now() - S.t0) / 1000);
 
